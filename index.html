@@ -8,8 +8,6 @@
         <meta name="apple-mobile-web-app-capable" content="yes">
         <link rel="stylesheet" href="css/leaflet.css"><link rel="stylesheet" href="css/L.Control.Locate.min.css">
         <link rel="stylesheet" href="css/qgis2web.css"><link rel="stylesheet" href="css/fontawesome-all.min.css">
-        <link rel="stylesheet" href="css/filter.css">
-<link rel="stylesheet" href="css/nouislider.min.css">
         <style>
         html, body, #map {
             width: 100%;
@@ -32,14 +30,11 @@
         <script src="js/rbush.min.js"></script>
         <script src="js/labelgun.min.js"></script>
         <script src="js/labels.js"></script>
-        <script src="js/tailDT.js"></script>
-<script src="js/nouislider.min.js"></script>
-<script src="js/wNumb.js"></script>
         <script src="data/_1.js"></script>
         <script>
         var map = L.map('map', {
             zoomControl:true, maxZoom:28, minZoom:1
-        }).fitBounds([[10.968262006100359,99.22807014085849],[13.734602613568821,104.30752080584493]]);
+        }).fitBounds([[12.318909015683099,101.00600712677578],[13.69307764947976,103.52601833796749]]);
         var hash = new L.Hash(map);
         map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
         var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
@@ -117,7 +112,7 @@
                 dashArray: '',
                 lineCap: 'square',
                 lineJoin: 'bevel',
-                weight: 2.0,
+                weight: 4.0,
                 fillOpacity: 0,
                 interactive: true,
             }
@@ -139,183 +134,6 @@
         var baseMaps = {};
         L.control.layers(baseMaps,{'<img src="legend/_1.png" /> กลุ่มป่าตะวันออก': layer__1,"Google Satellite": layer_GoogleSatellite_0,}).addTo(map);
         setBounds();
-        var mapDiv = document.getElementById('map');
-        var row = document.createElement('div');
-        row.className="row";
-        row.id="all";
-        row.style.height = "100%";
-        var col1 = document.createElement('div');
-        col1.className="col9";
-        col1.id = "mapWindow";
-        col1.style.height = "99%";
-        col1.style.width = "80%";
-        col1.style.display = "inline-block";
-        var col2 = document.createElement('div');
-        col2.className="col3";
-        col2.id = "menu";
-        col2.style.display = "inline-block";
-        mapDiv.parentNode.insertBefore(row, mapDiv);
-        document.getElementById("all").appendChild(col1);
-        document.getElementById("all").appendChild(col2);
-        col1.appendChild(mapDiv)
-        var Filters = {"Type_th": "str","Name_TH": "str"};
-        function filterFunc() {
-          map.eachLayer(function(lyr){
-          if ("options" in lyr && "dataVar" in lyr["options"]){
-            features = this[lyr["options"]["dataVar"]].features.slice(0);
-            try{
-              for (key in Filters){
-                keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
-                if (Filters[key] == "str" || Filters[key] == "bool"){
-                  var selection = [];
-                  var options = document.getElementById("sel_" + keyS).options
-                  for (var i=0; i < options.length; i++) {
-                    if (options[i].selected) selection.push(options[i].value);
-                  }
-                    try{
-                      if (key in features[0].properties){
-                        for (i = features.length - 1;
-                          i >= 0; --i){
-                          if (selection.indexOf(
-                          features[i].properties[key])<0
-                          && selection.length>0) {
-                          features.splice(i,1);
-                          }
-                        }
-                      }
-                    } catch(err){
-                  }
-                }
-                if (Filters[key] == "int"){
-                  sliderVals =  document.getElementById(
-                    "div_" + keyS).noUiSlider.get();
-                  try{
-                    if (key in features[0].properties){
-                    for (i = features.length - 1; i >= 0; --i){
-                      if (parseInt(features[i].properties[key])
-                          < sliderVals[0]
-                          || parseInt(features[i].properties[key])
-                          > sliderVals[1]){
-                            features.splice(i,1);
-                          }
-                        }
-                      }
-                    } catch(err){
-                    }
-                  }
-                if (Filters[key] == "real"){
-                  sliderVals =  document.getElementById(
-                    "div_" + keyS).noUiSlider.get();
-                  try{
-                    if (key in features[0].properties){
-                    for (i = features.length - 1; i >= 0; --i){
-                      if (features[i].properties[key]
-                          < sliderVals[0]
-                          || features[i].properties[key]
-                          > sliderVals[1]){
-                            features.splice(i,1);
-                          }
-                        }
-                      }
-                    } catch(err){
-                    }
-                  }
-                if (Filters[key] == "date"
-                  || Filters[key] == "datetime"
-                  || Filters[key] == "time"){
-                  try{
-                    if (key in features[0].properties){
-                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, '');
-                      startdate = document.getElementById("dat_" +
-                        HTMLkey + "_date1").value.replace(" ", "T");
-                      enddate = document.getElementById("dat_" +
-                        HTMLkey + "_date2").value.replace(" ", "T");
-                      for (i = features.length - 1; i >= 0; --i){
-                        if (features[i].properties[key] < startdate
-                          || features[i].properties[key] > enddate){
-                          features.splice(i,1);
-                        }
-                      }
-                    }
-                  } catch(err){
-                  }
-                }
-              }
-            } catch(err){
-            }
-          this[lyr["options"]["layerName"]].clearLayers();
-          this[lyr["options"]["layerName"]].addData(features);
-          }
-          })
-        }
-            document.getElementById("menu").appendChild(
-                document.createElement("div"));
-            var div_Type_th = document.createElement('div');
-            div_Type_th.id = "div_Type_th";
-            div_Type_th.className= "filterselect";
-            document.getElementById("menu").appendChild(div_Type_th);
-            sel_Type_th = document.createElement('select');
-            sel_Type_th.multiple = true;
-            sel_Type_th.size = 2;
-            sel_Type_th.id = "sel_Type_th";
-            var Type_th_options_str = "<option value='' unselected></option>";
-            sel_Type_th.onchange = function(){filterFunc()};
-            Type_th_options_str  += '<option value="อุทยานแห่งชาติ">อุทยานแห่งชาติ</option>';
-            Type_th_options_str  += '<option value="เขตรักษาพันธุ์สัตว์ป่า">เขตรักษาพันธุ์สัตว์ป่า</option>';
-            sel_Type_th.innerHTML = Type_th_options_str;
-            div_Type_th.appendChild(sel_Type_th);
-            var lab_Type_th = document.createElement('div');
-            lab_Type_th.innerHTML = 'Type_th';
-            lab_Type_th.className = 'filterlabel';
-            div_Type_th.appendChild(lab_Type_th);
-            var reset_Type_th = document.createElement('div');
-            reset_Type_th.innerHTML = 'clear filter';
-            reset_Type_th.className = 'filterlabel';
-            reset_Type_th.onclick = function() {
-                var options = document.getElementById("sel_Type_th").options;
-                for (var i=0; i < options.length; i++) {
-                    options[i].selected = false;
-                }
-                filterFunc();
-            };
-            div_Type_th.appendChild(reset_Type_th);
-            document.getElementById("menu").appendChild(
-                document.createElement("div"));
-            var div_Name_TH = document.createElement('div');
-            div_Name_TH.id = "div_Name_TH";
-            div_Name_TH.className= "filterselect";
-            document.getElementById("menu").appendChild(div_Name_TH);
-            sel_Name_TH = document.createElement('select');
-            sel_Name_TH.multiple = true;
-            sel_Name_TH.size = 8;
-            sel_Name_TH.id = "sel_Name_TH";
-            var Name_TH_options_str = "<option value='' unselected></option>";
-            sel_Name_TH.onchange = function(){filterFunc()};
-            Name_TH_options_str  += '<option value="คลองเครือหวายเฉลิมพระเกียรติฯ">คลองเครือหวายเฉลิมพระเกียรติฯ</option>';
-            Name_TH_options_str  += '<option value="น้ำตกคลองแก้ว">น้ำตกคลองแก้ว</option>';
-            Name_TH_options_str  += '<option value="น้ำตกพลิ้ว">น้ำตกพลิ้ว</option>';
-            Name_TH_options_str  += '<option value="เขาคิชฌกูฎ">เขาคิชฌกูฎ</option>';
-            Name_TH_options_str  += '<option value="เขาชะเมา-เขาวง">เขาชะเมา-เขาวง</option>';
-            Name_TH_options_str  += '<option value="เขาสอยดาว">เขาสอยดาว</option>';
-            Name_TH_options_str  += '<option value="เขาสิบห้าชั้น">เขาสิบห้าชั้น</option>';
-            Name_TH_options_str  += '<option value="เขาอ่างฤาไน">เขาอ่างฤาไน</option>';
-            sel_Name_TH.innerHTML = Name_TH_options_str;
-            div_Name_TH.appendChild(sel_Name_TH);
-            var lab_Name_TH = document.createElement('div');
-            lab_Name_TH.innerHTML = 'Name_TH';
-            lab_Name_TH.className = 'filterlabel';
-            div_Name_TH.appendChild(lab_Name_TH);
-            var reset_Name_TH = document.createElement('div');
-            reset_Name_TH.innerHTML = 'clear filter';
-            reset_Name_TH.className = 'filterlabel';
-            reset_Name_TH.onclick = function() {
-                var options = document.getElementById("sel_Name_TH").options;
-                for (var i=0; i < options.length; i++) {
-                    options[i].selected = false;
-                }
-                filterFunc();
-            };
-            div_Name_TH.appendChild(reset_Name_TH);
         </script>
     </body>
 </html>
